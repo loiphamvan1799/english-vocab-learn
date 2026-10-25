@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <!-- ==============================================================
+       METADATA BÀI HỌC (Dành cho Backend / Crawler bóc tách dữ liệu)
+       ============================================================== -->
+  <meta name="topic-id"       content="fruits-vn">
+  <meta name="topic-title"    content="Trái cây Việt Nam">
+  <meta name="topic-category" content="Vocabulary">
+  <meta name="topic-level"    content="Beginner">
+  <meta name="topic-count"    content="30">
+  <meta name="topic-lang"     content="en-US">
+
+  <title>Trái cây Việt Nam · Từ vựng tiếng Anh qua Chunks</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- CSS dùng chung cho tất cả các template bài học -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="topic-info-compact">
+        <span class="category-tag">Từ vựng</span>
+        <span class="topic-counter" id="topic-counter">30 cụm từ</span>
+      </div>
+      <button class="theme-toggle" id="theme-btn" aria-label="Chuyển chế độ sáng/tối" title="Sáng / Tối">
+        <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="container">
+    <section class="page-header">
+      <h1 class="page-title">
+        <span>🍓</span>
+        <span id="header-title">Trái cây Việt Nam</span>
+      </h1>
+      <p class="page-desc">Học từ vựng trực quan với hình ảnh thực tế chính xác từng loại quả, ghi nhớ tự nhiên qua các cụm từ (chunks) và câu ngữ cảnh thông dụng.</p>
+    </section>
+
+    <!-- LIST CONTAINER CHO CRAWLER / BACKEND CÀO VÀ RENDER -->
+    <div class="vocab-list" id="vocab-list">
+      <!-- Dữ liệu render bằng JS -->
+    </div>
+  </main>
+
+  <script>
+    const TOPIC_METADATA = {
+      id: "fruits-vn",
+      title: "Trái cây Việt Nam",
+      category: "Vocabulary",
+      level: "Beginner",
+      lang: "en-US"
+    };
+
+    /**
+     * DỮ LIỆU TỪ VỰNG CHUẨN XÁC:
+     * - meaningVi: Viết hoa chữ cái đầu, rõ nghĩa
+     * - id, nameVi, chunk, ipa, exampleEn, exampleVi
+     */
+    const VOCAB_DATA = [
+      {
+        id: "mango",
+        imageUrl: "https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Xoài",
+        chunk: "a ripe mango",
+        ipa: "/ə raɪp ˈmæŋ.ɡoʊ/",
+        meaningVi: "Một quả xoài chín",
+        exampleEn: "This [[a ripe mango]] smells amazing.",
+        exampleVi: "Quả xoài chín này thơm thật."
+      },
+      {
+        id: "banana",
+        imageUrl: "https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Chuối",
+        chunk: "a bunch of bananas",
+        ipa: "/ə bʌntʃ əv bəˈnɑː.nəz/",
+        meaningVi: "Một nải chuối",
+        exampleEn: "I bought [[a bunch of bananas]] at the market.",
+        exampleVi: "Tôi đã mua một nải chuối ở chợ."
+      },
+      {
+        id: "pineapple",
+        imageUrl: "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Dứa (Thơm)",
+        chunk: "peel a pineapple",
+        ipa: "/piːl ə ˈpaɪnˌæp.əl/",
+        meaningVi: "Gọt vỏ quả dứa",
+        exampleEn: "Can you [[peel a pineapple]] for dessert?",
+        exampleVi: "Bạn gọt dứa làm món tráng miệng được không?"
+      },
+      {
+        id: "watermelon",
+        imageUrl: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Dưa hấu",
+        chunk: "a slice of watermelon",
+        ipa: "/ə slaɪs əv ˈwɔː.təˌmel.ən/",
+        meaningVi: "Một miếng / lát dưa hấu",
+        exampleEn: "I'd love [[a slice of watermelon]] on a hot day.",
+        exampleVi: "Tôi rất thích ăn một lát dưa hấu vào ngày nóng."
+      },
+      {
+        id: "dragonfruit",
+        imageUrl: "https://images.unsplash.com/photo-1527325678964-54921661f888?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Thanh long",
+        chunk: "dragon fruit smoothie",
+        ipa: "/ˈdræɡ.ən fruːt ˈsmuː.ði/",
+        meaningVi: "Sinh tố thanh long",
+        exampleEn: "She ordered a [[dragon fruit smoothie]].",
+        exampleVi: "Cô ấy đã gọi một ly sinh tố thanh long."
+      },
+      {
+        id: "durian",
+        imageUrl: "https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Sầu riêng",
+        chunk: "the smell of durian",
+        ipa: "/ðə smel əv ˈdʊr.i.ən/",
+        meaningVi: "Mùi hương sầu riêng",
+        exampleEn: "Some people can't stand [[the smell of durian]].",
+        exampleVi: "Nhiều người không chịu nổi mùi sầu riêng."
+      },
+      {
+        id: "papaya",
+        imageUrl: "https://images.unsplash.com/photo-1617112848923-cc2234396a8d?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Đu đủ",
+        chunk: "green papaya salad",
+        ipa: "/ɡriːn pəˈpaɪ.ə ˈsæl.əd/",
+        meaningVi: "Gỏi / Nộm đu đủ xanh",
+        exampleEn: "[[Green papaya salad]] is my favorite starter.",
+        exampleVi: "Gỏi đu đủ xanh là món khai vị yêu thích của tôi."
+      },
+      {
+        id: "coconut",
+        imageUrl: "https://images.unsplash.com/photo-1544378730-8b5104b18790?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Dừa",
+        chunk: "fresh coconut water",
+        ipa: "/freʃ ˈkoʊ.kə.nʌt ˈwɔː.t̬ɚ/",
+        meaningVi: "Nước dừa tươi",
+        exampleEn: "Nothing beats [[fresh coconut water]] in Saigon.",
+        exampleVi: "Không gì tuyệt vời hơn nước dừa tươi ở Sài Gòn."
+      },
+      {
+        id: "orange",
+        imageUrl: "https://images.unsplash.com/photo-1547514701-42782101795e?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Cam",
+        chunk: "a glass of orange juice",
+        ipa: "/ə ɡlæs əv ˈɔːr.ɪndʒ dʒuːs/",
+        meaningVi: "Một ly nước cam",
+        exampleEn: "I start my day with [[a glass of orange juice]].",
+        exampleVi: "Tôi bắt đầu ngày mới với một ly nước cam."
+      },
+      {
+        id: "pomelo",
+        imageUrl: "https://images.unsplash.com/photo-1587393855524-087f83d95bc9?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Bưởi",
+        chunk: "peel a pomelo",
+        ipa: "/piːl ə ˈpɑː.mə.loʊ/",
+        meaningVi: "Bóc / gọt vỏ bưởi",
+        exampleEn: "It takes time to [[peel a pomelo]].",
+        exampleVi: "Bóc bưởi mất khá nhiều thời gian."
+      },
+      {
+        id: "lychee",
+        imageUrl: "https://images.unsplash.com/photo-1596489370008-8f5339f4d1e0?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Vải thiều",
+        chunk: "sweet lychee",
+        ipa: "/swiːt ˈliː.tʃi/",
+        meaningVi: "Vải thiều ngọt lịm",
+        exampleEn: "[[Sweet lychee]] is in season in June.",
+        exampleVi: "Vải thiều ngọt vào vụ vào tháng sáu."
+      },
+      {
+        id: "rambutan",
+        imageUrl: "https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Chôm chôm",
+        chunk: "hairy rambutan",
+        ipa: "/ˈher.i ræmˈbuː.tən/",
+        meaningVi: "Quả chôm chôm",
+        exampleEn: "Don't be scared of [[hairy rambutan]]; it's sweet inside.",
+        exampleVi: "Đừng ngại lớp vỏ ngoài; chôm chôm bên trong rất ngọt."
+      },
+      {
+        id: "longan",
+        imageUrl: "https://images.unsplash.com/photo-1589533610925-1cffc309ebaa?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Nhãn",
+        chunk: "dried longan",
+        ipa: "/draɪd ˈlɒŋ.ɡən/",
+        meaningVi: "Long nhãn (nhãn sấy khô)",
+        exampleEn: "My grandma makes tea with [[dried longan]].",
+        exampleVi: "Bà tôi thường pha trà với long nhãn."
+      },
+      {
+        id: "mangosteen",
+        imageUrl: "https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Măng cụt",
+        chunk: "mangosteen season",
+        ipa: "/ˈmæŋ.ɡə.stiːn ˈsiː.zən/",
+        meaningVi: "Mùa quả măng cụt",
+        exampleEn: "[[Mangosteen season]] starts in May.",
+        exampleVi: "Mùa măng cụt bắt đầu vào tháng Năm."
+      },
+      {
+        id: "jackfruit",
+        imageUrl: "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Mít",
+        chunk: "ripe jackfruit",
+        ipa: "/raɪp ˈdʒæk.fruːt/",
+        meaningVi: "Múi mít chín vàng",
+        exampleEn: "[[Ripe jackfruit]] has a strong, sweet aroma.",
+        exampleVi: "Mít chín có mùi thơm lừng đặc trưng."
+      },
+      {
+        id: "guava",
+        imageUrl: "https://images.unsplash.com/photo-1536511135898-13a89e0eeefc?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Ổi (Ổi ruột đỏ)",
+        chunk: "pink guava",
+        ipa: "/pɪŋk ˈɡwɑː.və/",
+        meaningVi: "Ổi ruột hồng (ổi đào)",
+        exampleEn: "I prefer [[pink guava]] with chili salt.",
+        exampleVi: "Tôi thích ăn ổi hồng chấm muối ớt hơn."
+      },
+      {
+        id: "starfruit",
+        imageUrl: "https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Khế",
+        chunk: "slice a star fruit",
+        ipa: "/slaɪs ə stɑːr fruːt/",
+        meaningVi: "Cắt lát quả khế",
+        exampleEn: "Please [[slice a star fruit]] for the salad.",
+        exampleVi: "Làm ơn cắt lát quả khế cho món salad nhé."
+      },
+      {
+        id: "custardapple",
+        imageUrl: "https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Na (Mãng cầu ta)",
+        chunk: "creamy custard apple",
+        ipa: "/ˈkriː.mi ˈkʌs.tərd ˈæp.əl/",
+        meaningVi: "Quả na mềm ngọt béo",
+        exampleEn: "[[Creamy custard apple]] tastes like ice cream.",
+        exampleVi: "Na mềm thơm có vị béo như kem."
+      },
+      {
+        id: "sapodilla",
+        imageUrl: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Hồng xiêm (Sapôchê)",
+        chunk: "soft sapodilla",
+        ipa: "/sɒft ˌsæp.əˈdɪl.ə/",
+        meaningVi: "Hồng xiêm chín mềm",
+        exampleEn: "Wait until the [[soft sapodilla]] is fully ripe.",
+        exampleVi: "Hãy đợi cho quả hồng xiêm chín mềm hẳn."
+      },
+      {
+        id: "roseapple",
+        imageUrl: "https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Mận (Roi)",
+        chunk: "crunchy rose apple",
+        ipa: "/ˈkrʌn.tʃi roʊz ˈæp.əl/",
+        meaningVi: "Quả roi giòn ngọt",
+        exampleEn: "[[Crunchy rose apple]] is refreshing in summer.",
+        exampleVi: "Quả roi giòn tan ăn rất mát vào mùa hè."
+      },
+      {
+        id: "apple",
+        imageUrl: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Táo",
+        chunk: "an apple a day",
+        ipa: "/ən ˈæp.əl ə deɪ/",
+        meaningVi: "Mỗi ngày một quả táo",
+        exampleEn: "[[An apple a day]] keeps the doctor away.",
+        exampleVi: "Mỗi ngày một quả táo giúp tránh xa bác sĩ."
+      },
+      {
+        id: "grape",
+        imageUrl: "https://images.unsplash.com/photo-1596363505729-4190a9506133?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Nho",
+        chunk: "a bunch of grapes",
+        ipa: "/ə bʌntʃ əv ɡreɪps/",
+        meaningVi: "Một chùm nho",
+        exampleEn: "She washed [[a bunch of grapes]] for the kids.",
+        exampleVi: "Cô ấy đã rửa một chùm nho cho lũ trẻ."
+      },
+      {
+        id: "pomegranate",
+        imageUrl: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Lựu",
+        chunk: "pomegranate seeds",
+        ipa: "/ˈpɑːm.ɡræn.ɪt siːdz/",
+        meaningVi: "Những hạt lựu đỏ",
+        exampleEn: "Sprinkle [[pomegranate seeds]] on the yogurt.",
+        exampleVi: "Rắc hạt lựu lên trên sữa chua."
+      },
+      {
+        id: "passionfruit",
+        imageUrl: "https://images.unsplash.com/photo-1546548970-71785318a17b?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Chanh leo (Chanh dây)",
+        chunk: "passion fruit juice",
+        ipa: "/ˈpæʃ.ən fruːt dʒuːs/",
+        meaningVi: "Nước cốt chanh leo",
+        exampleEn: "[[Passion fruit juice]] is sour but tasty.",
+        exampleVi: "Nước chanh leo tuy chua nhưng rất ngon."
+      },
+      {
+        id: "avocado",
+        imageUrl: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Bơ",
+        chunk: "mashed avocado",
+        ipa: "/mæʃt ˌæv.əˈkɑː.doʊ/",
+        meaningVi: "Bơ dầm nhuyễn",
+        exampleEn: "I spread [[mashed avocado]] on my toast.",
+        exampleVi: "Tôi phết bơ dầm lên bánh mì nướng."
+      },
+      {
+        id: "tangerine",
+        imageUrl: "https://images.unsplash.com/photo-1557800636-894a64c1696f?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Quýt",
+        chunk: "peel a tangerine",
+        ipa: "/piːl ə ˈtæn.dʒə.riːn/",
+        meaningVi: "Bóc vỏ quả quýt",
+        exampleEn: "Kids love to [[peel a tangerine]] at Tet.",
+        exampleVi: "Trẻ con thích bóc quýt vào dịp Tết."
+      },
+      {
+        id: "lime",
+        imageUrl: "https://images.unsplash.com/photo-1590502593747-42a996133562?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Chanh xanh",
+        chunk: "squeeze a lime",
+        ipa: "/skwiːz ə laɪm/",
+        meaningVi: "Vắt một lát chanh",
+        exampleEn: "[[Squeeze a lime]] over the noodles.",
+        exampleVi: "Vắt chanh lên tô phở."
+      },
+      {
+        id: "strawberry",
+        imageUrl: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Dâu tây",
+        chunk: "fresh strawberries",
+        ipa: "/freʃ ˈstrɔː.ber.iz/",
+        meaningVi: "Dâu tây tươi ngon",
+        exampleEn: "Dalat is famous for [[fresh strawberries]].",
+        exampleVi: "Đà Lạt rất nổi tiếng với dâu tây tươi."
+      },
+      {
+        id: "persimmon",
+        imageUrl: "https://images.unsplash.com/photo-1574856344991-aaa31b6f4ce3?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Hồng",
+        chunk: "ripe persimmon",
+        ipa: "/raɪp pɚˈsɪm.ən/",
+        meaningVi: "Quả hồng chín đỏ",
+        exampleEn: "[[Ripe persimmon]] is very sweet and soft.",
+        exampleVi: "Quả hồng chín rất ngọt và mềm."
+      },
+      {
+        id: "pear",
+        imageUrl: "https://images.unsplash.com/photo-1615484477778-ca3b77940c25?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Lê",
+        chunk: "a juicy pear",
+        ipa: "/ə ˈdʒuː.si per/",
+        meaningVi: "Một quả lê mọng nước",
+        exampleEn: "He bit into [[a juicy pear]].",
+        exampleVi: "Anh ấy cắn một miếng lê mọng nước."
+      }
+    ];
+
+    /* ==============================================================
+       AUDIO (TTS)
+       ============================================================== */
+    let availableVoices = [];
+    function initVoices() {
+      if ('speechSynthesis' in window) {
+        availableVoices = window.speechSynthesis.getVoices();
+      }
+    }
+    initVoices();
+    if (window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = initVoices;
+    }
+
+    function playAudio(text, btnElement) {
+      if (!('speechSynthesis' in window)) return;
+
+      window.speechSynthesis.cancel();
+      document.querySelectorAll('.audio-btn.playing').forEach(btn => btn.classList.remove('playing'));
+
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = TOPIC_METADATA.lang || 'en-US';
+      utter.rate = 0.9;
+
+      const voice = availableVoices.find(v => v.lang === 'en-US') || 
+                    availableVoices.find(v => v.lang.startsWith('en'));
+      if (voice) utter.voice = voice;
+
+      if (btnElement) {
+        btnElement.classList.add('playing');
+        utter.onend = () => btnElement.classList.remove('playing');
+        utter.onerror = () => btnElement.classList.remove('playing');
+      }
+
+      window.speechSynthesis.speak(utter);
+    }
+
+    /* ==============================================================
+       RENDER LIST (Data-attributes cho crawler)
+       ============================================================== */
+    const speakerSvg = `
+      <svg viewBox="0 0 24 24">
+        <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+      </svg>
+    `;
+
+    const playSvg = `
+      <svg viewBox="0 0 24 24">
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+    `;
+
+    function renderVocabList() {
+      const container = document.getElementById('vocab-list');
+      
+      container.innerHTML = VOCAB_DATA.map((item, index) => {
+        const cleanExampleEn = item.exampleEn.replace(/\[\[(.*?)\]\]/g, '$1');
+        const highlightedEn  = item.exampleEn.replace(/\[\[(.*?)\]\]/g, '<mark>$1</mark>');
+        const order = String(index + 1).padStart(2, '0');
+
+        return `
+          <article 
+            class="vocab-item" 
+            data-id="${item.id}"
+            data-index="${index + 1}">
+            
+            <!-- Cột Hình Ảnh Thật -->
+            <div class="vocab-visual">
+              <img 
+                class="vocab-img" 
+                src="${item.imageUrl}" 
+                alt="${item.nameVi}" 
+                loading="lazy" 
+                data-role="image" />
+              <span class="vocab-index-badge">#${order}</span>
+            </div>
+
+            <!-- Cột Nội Dung -->
+            <div class="vocab-content">
+              
+              <!-- Hàng 1: Chunk + Audio + Tên Tiếng Việt -->
+              <div class="vocab-header-line">
+                <div class="chunk-group">
+                  <span 
+                    class="chunk-text" 
+                    data-role="chunk"
+                    onclick="playAudio('${item.chunk.replace(/'/g, "\\'")}', this.nextElementSibling)">
+                    ${item.chunk}
+                  </span>
+                  <button 
+                    class="audio-btn" 
+                    type="button" 
+                    aria-label="Nghe cụm từ"
+                    onclick="playAudio('${item.chunk.replace(/'/g, "\\'")}', this)">
+                    ${speakerSvg}
+                  </button>
+                </div>
+                <span class="vn-title" data-role="name-vi">${item.nameVi}</span>
+              </div>
+
+              <!-- Hàng 2: Phiên âm IPA & Nghĩa dịch tiếng Việt nổi bật -->
+              <div class="vocab-meta-line">
+                <span class="ipa-text" data-role="ipa">${item.ipa}</span>
+                <span class="meta-divider">·</span>
+                <div class="meaning-badge">
+                  <span class="meaning-arrow">→</span>
+                  <span data-role="meaning-vi">${item.meaningVi}</span>
+                </div>
+              </div>
+
+              <!-- Hàng 3: Ví dụ thực tế -->
+              <div class="vocab-example-box">
+                <button 
+                  class="audio-btn" 
+                  type="button" 
+                  aria-label="Nghe câu ví dụ"
+                  onclick="playAudio('${cleanExampleEn.replace(/'/g, "\\'")}', this)">
+                  ${playSvg}
+                </button>
+                <div class="example-body">
+                  <p class="example-en" data-role="example-en" data-raw="${cleanExampleEn}">${highlightedEn}</p>
+                  <p class="example-vi" data-role="example-vi">${item.exampleVi}</p>
+                </div>
+              </div>
+
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    renderVocabList();
+
+    /* ==============================================================
+       THEME TOGGLE
+       ============================================================== */
+    const themeBtn = document.getElementById('theme-btn');
+    const themeIcon = document.getElementById('theme-icon');
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme-pref', theme);
+      if (theme === 'dark') {
+        themeIcon.innerHTML = `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
+      } else {
+        themeIcon.innerHTML = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`;
+      }
+    }
+
+    const savedTheme = localStorage.getItem('theme-pref') || 'light';
+    setTheme(savedTheme);
+
+    themeBtn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    });
+  </script>
+</body>
+</html>

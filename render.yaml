@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: english-vocab-api
+    env: node
+    plan: free
+    rootDir: source/server
+    buildCommand: npm install
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: CLIENT_ORIGIN
+        value: https://your-vercel-app.vercel.app
+      - key: ALLOWED_ORIGINS
+        value: http://localhost:3000,https://your-vercel-app.vercel.app

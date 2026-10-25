@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <!-- ==============================================================
+       METADATA BÀI QUIZ (Dành cho Backend / Crawler bóc tách dữ liệu)
+       ============================================================== -->
+  <meta name="quiz-id"        content="fruits-vn-quiz">
+  <meta name="quiz-topic-id"  content="fruits-vn">
+  <meta name="quiz-title"     content="Quiz Ôn Tập · Trái cây Việt Nam">
+  <meta name="quiz-type"      content="fill-in-the-blank">
+  <meta name="quiz-category"  content="Vocabulary">
+  <meta name="quiz-count"     content="30">
+  <meta name="quiz-lang"      content="en-US">
+
+  <title>Quiz Ôn Tập · Trái cây Việt Nam</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./quiz.css">
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="brand-group">
+        <span class="category-tag">Quiz Ôn Tập</span>
+        <span class="score-badge" id="score-display">30 từ cần điền</span>
+      </div>
+      <button class="theme-toggle" id="theme-btn" aria-label="Chuyển chế độ sáng/tối">
+        <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-fill" id="progress-fill"></div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="container">
+    <section class="page-header">
+      <h1 class="page-title">🎯 Thử Thách Từ Vựng · Trái Cây</h1>
+      <p class="page-desc">Nhìn hình ảnh và gợi ý tiếng Việt, điền cụm từ tiếng Anh tương ứng vào mỗi ô. Điền xong tất cả rồi nhấn <strong>Nộp bài</strong> để xem kết quả.</p>
+    </section>
+
+    <!-- QUIZ LIST — Crawler đọc từng article[data-quiz-id] để bóc tách câu hỏi -->
+    <div class="quiz-list" id="quiz-list"></div>
+
+    <!-- NỘP BÀI & KẾT QUẢ TỔNG KẾT -->
+    <div class="submit-area" id="submit-area">
+      <div class="result-summary" id="result-summary">
+        <div class="result-score" id="result-score">—</div>
+        <div class="result-label" id="result-label"></div>
+        <div class="result-breakdown">
+          <span class="breakdown-correct" id="breakdown-correct">✓ 0 đúng</span>
+          <span class="breakdown-incorrect" id="breakdown-incorrect">✗ 0 sai</span>
+        </div>
+      </div>
+
+      <button class="btn-submit-all" id="btn-submit-all" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        Nộp bài &amp; Xem kết quả
+      </button>
+
+      <button class="btn-retry" id="btn-retry" type="button" style="display:none">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1 4 1 10 7 10"></polyline>
+          <path d="M3.51 15a9 9 0 1 0 .49-5"></path>
+        </svg>
+        Làm lại (xáo trộn)
+      </button>
+    </div>
+  </main>
+
+  <script>
+    const QUIZ_METADATA = {
+      id: "fruits-vn-quiz",
+      topicId: "fruits-vn",
+      title: "Quiz Ôn Tập · Trái cây Việt Nam",
+      category: "Vocabulary",
+      lang: "en-US"
+    };
+
+    /**
+     * DỮ LIỆU ĐẦY ĐỦ 30 CÂU
+     * Không chứa ipa trong UI — tránh tiết lộ đáp án.
+     * Server/crawler lấy data từ script này theo schema chuẩn.
+     *
+     * Schema:
+     *   id         : string — slug định danh
+     *   imageUrl   : string — ảnh thật chính xác trái cây
+     *   nameVi     : string — tên tiếng Việt
+     *   meaningVi  : string — gợi ý nghĩa, viết hoa chữ đầu
+     *   chunk      : string — đáp án cụm từ tiếng Anh (KHÔNG hiển thị)
+     *   exampleVi  : string — câu dịch để hiển thị sau khi nộp bài
+     *   exampleEn  : string — câu ví dụ có [[chunk]] để hiển thị sau nộp
+     */
+    const QUIZ_DATA = [
+      { id:"mango",        imageUrl:"https://images.unsplash.com/photo-1553279768-865429fa0078?auto=format&fit=crop&w=400&q=80", nameVi:"Xoài",                 meaningVi:"Một quả xoài chín",         chunk:"a ripe mango",           exampleEn:"This [[a ripe mango]] smells amazing.",                     exampleVi:"Quả xoài chín này thơm thật." },
+      { id:"banana",       imageUrl:"https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?auto=format&fit=crop&w=400&q=80", nameVi:"Chuối",                meaningVi:"Một nải chuối",             chunk:"a bunch of bananas",     exampleEn:"I bought [[a bunch of bananas]] at the market.",            exampleVi:"Tôi đã mua một nải chuối ở chợ." },
+      { id:"pineapple",    imageUrl:"https://images.unsplash.com/photo-1550258987-190a2d41a8ba?auto=format&fit=crop&w=400&q=80", nameVi:"Dứa (Thơm)",           meaningVi:"Gọt vỏ quả dứa",            chunk:"peel a pineapple",       exampleEn:"Can you [[peel a pineapple]] for dessert?",                exampleVi:"Bạn gọt dứa làm món tráng miệng được không?" },
+      { id:"watermelon",   imageUrl:"https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=400&q=80", nameVi:"Dưa hấu",              meaningVi:"Một miếng dưa hấu",         chunk:"a slice of watermelon",  exampleEn:"I'd love [[a slice of watermelon]] on a hot day.",          exampleVi:"Tôi rất thích một lát dưa hấu vào ngày nóng." },
+      { id:"dragonfruit",  imageUrl:"https://images.unsplash.com/photo-1527325678964-54921661f888?auto=format&fit=crop&w=400&q=80", nameVi:"Thanh long",           meaningVi:"Sinh tố thanh long",        chunk:"dragon fruit smoothie",  exampleEn:"She ordered a [[dragon fruit smoothie]].",                  exampleVi:"Cô ấy đã gọi một ly sinh tố thanh long." },
+      { id:"durian",       imageUrl:"https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=400&q=80", nameVi:"Sầu riêng",            meaningVi:"Mùi hương sầu riêng",       chunk:"the smell of durian",    exampleEn:"Some people can't stand [[the smell of durian]].",          exampleVi:"Nhiều người không chịu nổi mùi sầu riêng." },
+      { id:"papaya",       imageUrl:"https://images.unsplash.com/photo-1617112848923-cc2234396a8d?auto=format&fit=crop&w=400&q=80", nameVi:"Đu đủ",                meaningVi:"Gỏi đu đủ xanh",           chunk:"green papaya salad",     exampleEn:"[[Green papaya salad]] is my favorite starter.",            exampleVi:"Gỏi đu đủ xanh là món khai vị yêu thích của tôi." },
+      { id:"coconut",      imageUrl:"https://images.unsplash.com/photo-1544378730-8b5104b18790?auto=format&fit=crop&w=400&q=80", nameVi:"Dừa",                  meaningVi:"Nước dừa tươi",             chunk:"fresh coconut water",    exampleEn:"Nothing beats [[fresh coconut water]] in Saigon.",          exampleVi:"Không gì tuyệt vời hơn nước dừa tươi ở Sài Gòn." },
+      { id:"orange",       imageUrl:"https://images.unsplash.com/photo-1547514701-42782101795e?auto=format&fit=crop&w=400&q=80", nameVi:"Cam",                  meaningVi:"Một ly nước cam",           chunk:"a glass of orange juice", exampleEn:"I start my day with [[a glass of orange juice]].",          exampleVi:"Tôi bắt đầu ngày mới với một ly nước cam." },
+      { id:"pomelo",       imageUrl:"https://images.unsplash.com/photo-1587393855524-087f83d95bc9?auto=format&fit=crop&w=400&q=80", nameVi:"Bưởi",                 meaningVi:"Bóc vỏ quả bưởi",          chunk:"peel a pomelo",          exampleEn:"It takes time to [[peel a pomelo]].",                      exampleVi:"Bóc bưởi mất khá nhiều thời gian." },
+      { id:"lychee",       imageUrl:"https://images.unsplash.com/photo-1596489370008-8f5339f4d1e0?auto=format&fit=crop&w=400&q=80", nameVi:"Vải thiều",            meaningVi:"Vải thiều ngọt lịm",       chunk:"sweet lychee",           exampleEn:"[[Sweet lychee]] is in season in June.",                    exampleVi:"Vải thiều ngọt vào vụ tháng sáu." },
+      { id:"rambutan",     imageUrl:"https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=400&q=80", nameVi:"Chôm chôm",            meaningVi:"Quả chôm chôm lông",       chunk:"hairy rambutan",         exampleEn:"Don't be scared of [[hairy rambutan]]; it's sweet inside.", exampleVi:"Đừng ngại vỏ ngoài; chôm chôm bên trong rất ngọt." },
+      { id:"longan",       imageUrl:"https://images.unsplash.com/photo-1589533610925-1cffc309ebaa?auto=format&fit=crop&w=400&q=80", nameVi:"Nhãn",                 meaningVi:"Long nhãn (nhãn sấy khô)", chunk:"dried longan",           exampleEn:"My grandma makes tea with [[dried longan]].",              exampleVi:"Bà tôi thường pha trà với long nhãn." },
+      { id:"mangosteen",   imageUrl:"https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?auto=format&fit=crop&w=400&q=80", nameVi:"Măng cụt",             meaningVi:"Mùa quả măng cụt",         chunk:"mangosteen season",      exampleEn:"[[Mangosteen season]] starts in May.",                     exampleVi:"Mùa măng cụt bắt đầu vào tháng Năm." },
+      { id:"jackfruit",    imageUrl:"https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&w=400&q=80", nameVi:"Mít",                  meaningVi:"Múi mít chín vàng",        chunk:"ripe jackfruit",         exampleEn:"[[Ripe jackfruit]] has a strong, sweet aroma.",            exampleVi:"Mít chín có mùi thơm lừng đặc trưng." },
+      { id:"guava",        imageUrl:"https://images.unsplash.com/photo-1536511135898-13a89e0eeefc?auto=format&fit=crop&w=400&q=80", nameVi:"Ổi ruột đỏ",           meaningVi:"Ổi hồng (ổi đào)",         chunk:"pink guava",             exampleEn:"I prefer [[pink guava]] with chili salt.",                 exampleVi:"Tôi thích ăn ổi hồng chấm muối ớt hơn." },
+      { id:"starfruit",    imageUrl:"https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=400&q=80", nameVi:"Khế",                  meaningVi:"Cắt lát quả khế",          chunk:"slice a star fruit",     exampleEn:"Please [[slice a star fruit]] for the salad.",             exampleVi:"Làm ơn cắt lát quả khế cho món salad nhé." },
+      { id:"custardapple", imageUrl:"https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=400&q=80", nameVi:"Na (Mãng cầu)",        meaningVi:"Quả na mềm ngọt béo",      chunk:"creamy custard apple",   exampleEn:"[[Creamy custard apple]] tastes like ice cream.",          exampleVi:"Na mềm thơm có vị béo như kem." },
+      { id:"sapodilla",    imageUrl:"https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=400&q=80", nameVi:"Hồng xiêm",            meaningVi:"Hồng xiêm chín mềm",       chunk:"soft sapodilla",         exampleEn:"Wait until the [[soft sapodilla]] is fully ripe.",         exampleVi:"Hãy đợi cho quả hồng xiêm chín mềm hẳn." },
+      { id:"roseapple",    imageUrl:"https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?auto=format&fit=crop&w=400&q=80", nameVi:"Mận (Roi)",            meaningVi:"Quả roi giòn ngọt",        chunk:"crunchy rose apple",     exampleEn:"[[Crunchy rose apple]] is refreshing in summer.",          exampleVi:"Quả roi giòn tan ăn rất mát vào mùa hè." },
+      { id:"apple",        imageUrl:"https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?auto=format&fit=crop&w=400&q=80", nameVi:"Táo",                  meaningVi:"Mỗi ngày một quả táo",     chunk:"an apple a day",         exampleEn:"[[An apple a day]] keeps the doctor away.",                exampleVi:"Mỗi ngày một quả táo giúp tránh xa bác sĩ." },
+      { id:"grape",        imageUrl:"https://images.unsplash.com/photo-1596363505729-4190a9506133?auto=format&fit=crop&w=400&q=80", nameVi:"Nho",                  meaningVi:"Một chùm nho",             chunk:"a bunch of grapes",      exampleEn:"She washed [[a bunch of grapes]] for the kids.",           exampleVi:"Cô ấy đã rửa một chùm nho cho lũ trẻ." },
+      { id:"pomegranate",  imageUrl:"https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=400&q=80", nameVi:"Lựu",                  meaningVi:"Những hạt lựu đỏ",         chunk:"pomegranate seeds",      exampleEn:"Sprinkle [[pomegranate seeds]] on the yogurt.",            exampleVi:"Rắc hạt lựu lên trên sữa chua." },
+      { id:"passionfruit", imageUrl:"https://images.unsplash.com/photo-1546548970-71785318a17b?auto=format&fit=crop&w=400&q=80", nameVi:"Chanh leo",            meaningVi:"Nước cốt chanh leo",       chunk:"passion fruit juice",    exampleEn:"[[Passion fruit juice]] is sour but tasty.",               exampleVi:"Nước chanh leo tuy chua nhưng rất ngon." },
+      { id:"avocado",      imageUrl:"https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&w=400&q=80", nameVi:"Bơ",                   meaningVi:"Bơ dầm nhuyễn",            chunk:"mashed avocado",         exampleEn:"I spread [[mashed avocado]] on my toast.",                 exampleVi:"Tôi phết bơ dầm lên bánh mì nướng." },
+      { id:"tangerine",    imageUrl:"https://images.unsplash.com/photo-1557800636-894a64c1696f?auto=format&fit=crop&w=400&q=80", nameVi:"Quýt",                 meaningVi:"Bóc vỏ quả quýt",          chunk:"peel a tangerine",       exampleEn:"Kids love to [[peel a tangerine]] at Tet.",                exampleVi:"Trẻ con thích bóc quýt vào dịp Tết." },
+      { id:"lime",         imageUrl:"https://images.unsplash.com/photo-1590502593747-42a996133562?auto=format&fit=crop&w=400&q=80", nameVi:"Chanh xanh",           meaningVi:"Vắt một lát chanh",        chunk:"squeeze a lime",         exampleEn:"[[Squeeze a lime]] over the noodles.",                     exampleVi:"Vắt chanh lên tô phở." },
+      { id:"strawberry",   imageUrl:"https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&w=400&q=80", nameVi:"Dâu tây",              meaningVi:"Dâu tây tươi ngon",        chunk:"fresh strawberries",     exampleEn:"Dalat is famous for [[fresh strawberries]].",               exampleVi:"Đà Lạt rất nổi tiếng với dâu tây tươi." },
+      { id:"persimmon",    imageUrl:"https://images.unsplash.com/photo-1574856344991-aaa31b6f4ce3?auto=format&fit=crop&w=400&q=80", nameVi:"Hồng",                 meaningVi:"Quả hồng chín đỏ",         chunk:"ripe persimmon",         exampleEn:"[[Ripe persimmon]] is very sweet and soft.",               exampleVi:"Quả hồng chín rất ngọt và mềm." },
+      { id:"pear",         imageUrl:"https://images.unsplash.com/photo-1615484477778-ca3b77940c25?auto=format&fit=crop&w=400&q=80", nameVi:"Lê",                   meaningVi:"Một quả lê mọng nước",     chunk:"a juicy pear",           exampleEn:"He bit into [[a juicy pear]].",                             exampleVi:"Anh ấy cắn một miếng lê mọng nước." }
+    ];
+
+    // Fisher-Yates shuffle
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    let currentQuestions = [];
+    let submitted = false;
+
+    /* ==============================================================
+       RENDER
+       ============================================================== */
+    function renderQuiz() {
+      submitted = false;
+      currentQuestions = shuffle(QUIZ_DATA);
+
+      document.getElementById('quiz-list').innerHTML = currentQuestions.map((item, i) => {
+        const order = String(i + 1).padStart(2, '0');
+        const cleanEx = item.exampleEn.replace(/\[\[(.*?)\]\]/g, '$1');
+        return `
+          <article
+            class="quiz-card"
+            id="card-${item.id}"
+            data-quiz-id="${item.id}"
+            data-index="${i + 1}">
+
+            <!-- Cột ảnh thật — Crawler đọc data-role="image" -->
+            <div class="quiz-visual">
+              <img class="quiz-img" src="${item.imageUrl}" alt="${item.nameVi}" loading="lazy" data-role="image">
+              <span class="quiz-index-badge">#${order}</span>
+            </div>
+
+            <!-- Cột nội dung -->
+            <div class="quiz-content">
+
+              <!-- Gợi ý: Tên Tiếng Việt + Nghĩa (không có IPA) -->
+              <div class="quiz-cue-line">
+                <span class="cue-meaning" data-role="meaning-vi">${item.meaningVi}</span>
+                <span class="cue-tag"     data-role="name-vi">${item.nameVi}</span>
+              </div>
+
+              <!-- Ô điền từ -->
+              <div class="quiz-form">
+                <input
+                  type="text"
+                  class="quiz-input"
+                  id="input-${item.id}"
+                  placeholder="Nhập cụm từ tiếng Anh..."
+                  autocomplete="off"
+                  spellcheck="false"
+                  data-role="input"
+                  aria-label="Nhập đáp án cho ${item.nameVi}" />
+                <span class="result-icon" id="icon-${item.id}" aria-hidden="true"></span>
+              </div>
+
+              <!-- Kết quả sau khi nộp bài -->
+              <div class="answer-reveal" id="reveal-${item.id}" data-role="answer-reveal">
+                Đáp án đúng: <strong data-role="chunk">${item.chunk}</strong>
+              </div>
+
+              <!-- Câu ví dụ sau khi nộp bài -->
+              <div class="example-line" id="example-${item.id}" data-role="example-reveal">
+                ${cleanEx} · <em>${item.exampleVi}</em>
+              </div>
+
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      // Reset UI
+      document.getElementById('result-summary').classList.remove('show');
+      document.getElementById('btn-retry').style.display = 'none';
+      document.getElementById('btn-submit-all').style.display = '';
+      document.getElementById('btn-submit-all').disabled = false;
+      document.getElementById('score-display').textContent = `${currentQuestions.length} từ cần điền`;
+      document.getElementById('score-display').classList.remove('has-result');
+      document.getElementById('progress-fill').style.width = '0%';
+    }
+
+    /* ==============================================================
+       NỘP BÀI & CHẤM ĐIỂM
+       ============================================================== */
+    function normalize(text) {
+      return text.trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+
+    function submitAll() {
+      if (submitted) return;
+      submitted = true;
+
+      let correct = 0;
+      let incorrect = 0;
+
+      currentQuestions.forEach(item => {
+        const input = document.getElementById(`input-${item.id}`);
+        const icon  = document.getElementById(`icon-${item.id}`);
+        const reveal = document.getElementById(`reveal-${item.id}`);
+        const exLine = document.getElementById(`example-${item.id}`);
+        const card  = document.getElementById(`card-${item.id}`);
+
+        const userVal = normalize(input.value);
+        const correctVal = normalize(item.chunk);
+        const isCorrect = userVal === correctVal;
+
+        // Khoá ô nhập sau khi nộp
+        input.disabled = true;
+
+        if (isCorrect) {
+          correct++;
+          input.classList.add('result-correct');
+          icon.textContent = '✓';
+          icon.style.color = 'var(--success)';
+          icon.classList.add('show');
+          card.classList.add('is-correct');
+        } else {
+          incorrect++;
+          input.classList.add('result-incorrect');
+          icon.textContent = '✗';
+          icon.style.color = 'var(--error)';
+          icon.classList.add('show');
+          card.classList.add('is-incorrect');
+          // Hiển thị đáp án đúng khi sai
+          reveal.classList.add('show');
+        }
+        // Luôn hiển thị câu ví dụ ngữ cảnh sau khi nộp
+        exLine.classList.add('show');
+      });
+
+      const total = currentQuestions.length;
+      const pct = Math.round((correct / total) * 100);
+
+      // Cập nhật tổng kết
+      document.getElementById('result-score').innerHTML = `${correct} <span>/ ${total}</span>`;
+      document.getElementById('result-label').textContent = getLabel(pct);
+      document.getElementById('breakdown-correct').textContent   = `✓ ${correct} đúng`;
+      document.getElementById('breakdown-incorrect').textContent = `✗ ${incorrect} sai`;
+      document.getElementById('result-summary').classList.add('show');
+
+      // Cập nhật top bar
+      document.getElementById('score-display').textContent = `${correct}/${total} đúng · ${pct}%`;
+      document.getElementById('score-display').classList.add('has-result');
+      document.getElementById('progress-fill').style.width = `${pct}%`;
+
+      // Đổi nút
+      document.getElementById('btn-submit-all').style.display = 'none';
+      document.getElementById('btn-retry').style.display = '';
+
+      // Cuộn lên xem kết quả
+      document.getElementById('submit-area').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function getLabel(pct) {
+      if (pct === 100) return '🏆 Hoàn hảo! Bạn nhớ tất cả các từ!';
+      if (pct >= 80)  return '🌟 Xuất sắc! Chỉ còn một vài từ cần ôn thêm.';
+      if (pct >= 60)  return '👍 Khá tốt! Hãy ôn lại các từ bị sai nhé.';
+      if (pct >= 40)  return '📖 Cần ôn thêm — ôn lại bài học rồi thử lại!';
+      return '💪 Hãy đọc lại bài học trước khi thử lại nhé!';
+    }
+
+    document.getElementById('btn-submit-all').addEventListener('click', submitAll);
+    document.getElementById('btn-retry').addEventListener('click', renderQuiz);
+
+    // Hỗ trợ Enter để chuyển xuống ô tiếp theo
+    document.getElementById('quiz-list').addEventListener('keydown', e => {
+      if (e.key !== 'Enter' || submitted) return;
+      const inputs = Array.from(document.querySelectorAll('.quiz-input:not(:disabled)'));
+      const idx = inputs.indexOf(e.target);
+      if (idx >= 0 && idx < inputs.length - 1) {
+        e.preventDefault();
+        inputs[idx + 1].focus();
+      }
+    });
+
+    renderQuiz();
+
+    /* ==============================================================
+       THEME TOGGLE
+       ============================================================== */
+    const themeBtn  = document.getElementById('theme-btn');
+    const themeIcon = document.getElementById('theme-icon');
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme-pref', theme);
+      themeIcon.innerHTML = theme === 'dark'
+        ? `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`
+        : `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`;
+    }
+
+    setTheme(localStorage.getItem('theme-pref') || 'light');
+    themeBtn.addEventListener('click', () => {
+      setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  </script>
+</body>
+</html>

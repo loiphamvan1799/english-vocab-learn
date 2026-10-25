@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="topic-id" content="coffee-shop-vocabulary">
+  <meta name="topic-title" content="Tiếng Anh tại quán cà phê">
+  <meta name="topic-category" content="Everyday English">
+  <meta name="topic-level" content="Beginner">
+  <meta name="topic-count" content="12">
+  <meta name="topic-lang" content="en-US">
+  <title>Tiếng Anh tại quán cà phê</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="top-bar">
+    <div class="top-bar-inner">
+      <div class="topic-info-compact">
+        <span class="category-tag">Từ vựng giao tiếp</span>
+        <span class="topic-counter" id="topic-counter">12 cụm từ</span>
+      </div>
+      <button class="theme-toggle" id="theme-btn" type="button" aria-label="Chuyển chế độ sáng/tối" title="Sáng / Tối">
+        <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="page-header">
+      <h1 class="page-title"><span aria-hidden="true">☕</span><span id="header-title">Tiếng Anh tại quán cà phê</span></h1>
+      <p class="page-desc">Học những cụm từ tiếng Anh thiết thực để gọi món, chọn đồ uống và trò chuyện thân thiện tại quán cà phê.</p>
+    </section>
+
+    <div class="vocab-list" id="vocab-list" aria-live="polite"></div>
+  </main>
+
+  <script>
+    const TOPIC_METADATA = {
+      id: "coffee-shop-vocabulary",
+      title: "Tiếng Anh tại quán cà phê",
+      category: "Everyday English",
+      level: "Beginner",
+      lang: "en-US"
+    };
+
+    const VOCAB_DATA = [
+      {
+        id: "order-a-coffee",
+        imageUrl: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Gọi một ly cà phê",
+        chunk: "I'd like a coffee, please",
+        ipa: "/aɪd laɪk ə ˈkɑː.fi pliːz/",
+        meaningVi: "Tôi muốn gọi một ly cà phê",
+        exampleEn: "[[I'd like a coffee, please]] — Could I see the menu?",
+        exampleVi: "Tôi muốn gọi một ly cà phê — Cho tôi xem thực đơn được không?"
+      },
+      {
+        id: "cup-of-tea",
+        imageUrl: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Một tách trà",
+        chunk: "a cup of tea",
+        ipa: "/ə kʌp əv tiː/",
+        meaningVi: "Một tách trà",
+        exampleEn: "She ordered [[a cup of tea]] with lemon.",
+        exampleVi: "Cô ấy gọi một tách trà với chanh."
+      },
+      {
+        id: "iced-latte",
+        imageUrl: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Latte đá",
+        chunk: "an iced latte",
+        ipa: "/ən aɪst ˈlɑː.teɪ/",
+        meaningVi: "Một ly latte đá",
+        exampleEn: "Can I have [[an iced latte]] with oat milk?",
+        exampleVi: "Cho tôi một ly latte đá với sữa yến mạch được không?"
+      },
+      {
+        id: "takeaway-cup",
+        imageUrl: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Ly mang đi",
+        chunk: "to take away",
+        ipa: "/tə teɪk əˈweɪ/",
+        meaningVi: "Mang đi",
+        exampleEn: "Could I get that [[to take away]]?",
+        exampleVi: "Tôi có thể gọi món đó mang đi không?"
+      },
+      {
+        id: "eat-in",
+        imageUrl: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Dùng tại quán",
+        chunk: "for here",
+        ipa: "/fɔːr hɪr/",
+        meaningVi: "Dùng tại đây",
+        exampleEn: "Is that [[for here]] or to go?",
+        exampleVi: "Bạn dùng tại đây hay mang đi?"
+      },
+      {
+        id: "without-sugar",
+        imageUrl: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Không đường",
+        chunk: "without any sugar",
+        ipa: "/wɪˈðaʊt ˈeni ˈʃʊɡ.ɚ/",
+        meaningVi: "Không thêm đường",
+        exampleEn: "I'll have my coffee [[without any sugar]].",
+        exampleVi: "Tôi sẽ uống cà phê không đường."
+      },
+      {
+        id: "extra-shot",
+        imageUrl: "https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Thêm một shot espresso",
+        chunk: "an extra shot",
+        ipa: "/ən ˈek.strə ʃɑːt/",
+        meaningVi: "Thêm một shot cà phê espresso",
+        exampleEn: "Could you add [[an extra shot]] to my latte?",
+        exampleVi: "Bạn có thể thêm một shot espresso vào latte giúp tôi không?"
+      },
+      {
+        id: "something-sweet",
+        imageUrl: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Một món gì đó ngọt",
+        chunk: "something sweet",
+        ipa: "/ˈsʌm.θɪŋ swiːt/",
+        meaningVi: "Một món ăn hoặc đồ uống có vị ngọt",
+        exampleEn: "I'd like [[something sweet]] with my tea.",
+        exampleVi: "Tôi muốn dùng món gì đó ngọt cùng với trà."
+      },
+      {
+        id: "table-by-window",
+        imageUrl: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Bàn cạnh cửa sổ",
+        chunk: "a table by the window",
+        ipa: "/ə ˈteɪ.bəl baɪ ðə ˈwɪn.doʊ/",
+        meaningVi: "Một chiếc bàn cạnh cửa sổ",
+        exampleEn: "Is [[a table by the window]] available?",
+        exampleVi: "Còn bàn nào cạnh cửa sổ không?"
+      },
+      {
+        id: "pay-by-card",
+        imageUrl: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Thanh toán bằng thẻ",
+        chunk: "pay by card",
+        ipa: "/peɪ baɪ kɑːrd/",
+        meaningVi: "Thanh toán bằng thẻ ngân hàng",
+        exampleEn: "Can I [[pay by card]]?",
+        exampleVi: "Tôi có thể thanh toán bằng thẻ không?"
+      },
+      {
+        id: "receipt-please",
+        imageUrl: "https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Xin hóa đơn",
+        chunk: "Could I have the receipt?",
+        ipa: "/kʊd aɪ hæv ðə rɪˈsiːt/",
+        meaningVi: "Cho tôi xin hóa đơn được không?",
+        exampleEn: "[[Could I have the receipt?]] I need it for work.",
+        exampleVi: "Cho tôi xin hóa đơn được không? Tôi cần hóa đơn cho công việc."
+      },
+      {
+        id: "recommend-a-drink",
+        imageUrl: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=400&q=80",
+        nameVi: "Giới thiệu một món uống",
+        chunk: "What do you recommend?",
+        ipa: "/wʌt duː juː ˌrek.əˈmend/",
+        meaningVi: "Bạn gợi ý món nào?",
+        exampleEn: "It's my first time here. [[What do you recommend?]]",
+        exampleVi: "Đây là lần đầu tôi đến đây. Bạn gợi ý món nào?"
+      }
+    ];
+
+    const speakerSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>';
+    const playSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>';
+
+    function speak(text, button) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      document.querySelectorAll('.audio-btn.playing').forEach((element) => element.classList.remove('playing'));
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = TOPIC_METADATA.lang || 'en-US';
+      utterance.rate = 0.9;
+      button.classList.add('playing');
+      utterance.onend = utterance.onerror = () => button.classList.remove('playing');
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function appendHighlightedExample(element, text) {
+      const pattern = /\[\[(.*?)\]\]/g;
+      let lastIndex = 0;
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        element.append(document.createTextNode(text.slice(lastIndex, match.index)));
+        const mark = document.createElement('mark');
+        mark.textContent = match[1];
+        element.append(mark);
+        lastIndex = pattern.lastIndex;
+      }
+      element.append(document.createTextNode(text.slice(lastIndex)));
+    }
+
+    function makeAudioButton(text, label, icon) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'audio-btn';
+      button.setAttribute('aria-label', label);
+      button.innerHTML = icon;
+      button.addEventListener('click', () => speak(text, button));
+      return button;
+    }
+
+    function renderVocabList() {
+      const container = document.getElementById('vocab-list');
+      const fragment = document.createDocumentFragment();
+
+      VOCAB_DATA.forEach((item, index) => {
+        const article = document.createElement('article');
+        article.className = 'vocab-item';
+        article.dataset.id = item.id;
+        article.dataset.index = String(index + 1);
+
+        const visual = document.createElement('div');
+        visual.className = 'vocab-visual';
+        const image = document.createElement('img');
+        image.className = 'vocab-img';
+        image.src = item.imageUrl;
+        image.alt = item.nameVi;
+        image.loading = 'lazy';
+        image.addEventListener('error', () => {
+          image.remove();
+          visual.classList.add('image-fallback');
+          visual.setAttribute('aria-label', `Ảnh minh họa cho ${item.nameVi}`);
+        }, { once: true });
+        visual.append(image);
+        const badge = document.createElement('span');
+        badge.className = 'vocab-index-badge';
+        badge.textContent = `#${String(index + 1).padStart(2, '0')}`;
+        visual.append(badge);
+
+        const content = document.createElement('div');
+        content.className = 'vocab-content';
+        const header = document.createElement('div');
+        header.className = 'vocab-header-line';
+        const chunkGroup = document.createElement('div');
+        chunkGroup.className = 'chunk-group';
+        const chunk = document.createElement('span');
+        chunk.className = 'chunk-text';
+        chunk.dataset.role = 'chunk';
+        chunk.textContent = item.chunk;
+        chunk.tabIndex = 0;
+        chunk.addEventListener('click', () => speak(item.chunk, chunkGroup.querySelector('.audio-btn')));
+        chunk.addEventListener('keydown', (event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            speak(item.chunk, chunkGroup.querySelector('.audio-btn'));
+          }
+        });
+        chunkGroup.append(chunk, makeAudioButton(item.chunk, 'Nghe cụm từ', speakerSvg));
+        const name = document.createElement('span');
+        name.className = 'vn-title';
+        name.dataset.role = 'name-vi';
+        name.textContent = item.nameVi;
+        header.append(chunkGroup, name);
+
+        const meta = document.createElement('div');
+        meta.className = 'vocab-meta-line';
+        const ipa = document.createElement('span');
+        ipa.className = 'ipa-text';
+        ipa.dataset.role = 'ipa';
+        ipa.textContent = item.ipa;
+        const divider = document.createElement('span');
+        divider.className = 'meta-divider';
+        divider.textContent = '·';
+        const meaning = document.createElement('div');
+        meaning.className = 'meaning-badge';
+        const arrow = document.createElement('span');
+        arrow.className = 'meaning-arrow';
+        arrow.textContent = '→';
+        const meaningText = document.createElement('span');
+        meaningText.dataset.role = 'meaning-vi';
+        meaningText.textContent = item.meaningVi;
+        meaning.append(arrow, meaningText);
+        meta.append(ipa, divider, meaning);
+
+        const exampleBox = document.createElement('div');
+        exampleBox.className = 'vocab-example-box';
+        const cleanExample = item.exampleEn.replace(/\[\[(.*?)\]\]/g, '$1');
+        exampleBox.append(makeAudioButton(cleanExample, 'Nghe câu ví dụ', playSvg));
+        const exampleBody = document.createElement('div');
+        exampleBody.className = 'example-body';
+        const exampleEn = document.createElement('p');
+        exampleEn.className = 'example-en';
+        exampleEn.dataset.role = 'example-en';
+        exampleEn.dataset.raw = cleanExample;
+        appendHighlightedExample(exampleEn, item.exampleEn);
+        const exampleVi = document.createElement('p');
+        exampleVi.className = 'example-vi';
+        exampleVi.dataset.role = 'example-vi';
+        exampleVi.textContent = item.exampleVi;
+        exampleBody.append(exampleEn, exampleVi);
+        exampleBox.append(exampleBody);
+        content.append(header, meta, exampleBox);
+        article.append(visual, content);
+        fragment.append(article);
+      });
+
+      container.replaceChildren(fragment);
+      document.getElementById('topic-counter').textContent = `${VOCAB_DATA.length} cụm từ`;
+    }
+
+    renderVocabList();
+
+    const themeButton = document.getElementById('theme-btn');
+    const themeIcon = document.getElementById('theme-icon');
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      try { localStorage.setItem('theme-pref', theme); } catch (_) { /* file:// may block storage */ }
+      themeIcon.innerHTML = theme === 'dark'
+        ? '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>'
+        : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+    }
+    let savedTheme = 'light';
+    try { savedTheme = localStorage.getItem('theme-pref') || 'light'; } catch (_) { /* file:// may block storage */ }
+    setTheme(savedTheme);
+    themeButton.addEventListener('click', () => {
+      setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+  </script>
+</body>
+</html>

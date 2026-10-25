@@ -1,0 +1,22 @@
+{
+  "name": "english-vocab-local",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=20.18.0"
+  },
+  "workspaces": [
+    "./source/client",
+    "./source/server"
+  ],
+  "scripts": {
+    "dev": "concurrently -k \"npm --prefix source/client run dev\" \"npm --prefix source/server run dev\"",
+    "build": "npm --prefix source/client run build && npm --prefix source/server run build",
+    "lint": "npm --prefix source/client run lint && npm --prefix source/server run lint",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1",
+    "prettier": "^3.3.3"
+  }
+}
